@@ -1,0 +1,32 @@
+\documentclass[11pt,twocolumn]{article}
+\usepackage[utf8]{inputenc}
+
+%opening
+\title{Rapport Simres}
+\author{Carpentier Pierre-François - Cissé Nouhoum } 
+
+\begin{document}
+
+\maketitle
+
+
+\section{Simulation}
+Dans un réseau, il y a plusieurs classes de flux qui circulent, ces flux n'ont pas tous les mêmes caractéristiques.
+Par exemple les flux de données sont proches d'un comportement pouvant étre décrit par une loi de Poisson,
+ les flux de voix peuvent être décrits par une loi exponentielle, et les flux vidéo émettent en continue.
+De plus ils n'impliquent pas non plus les mêmes contraintes, que ca soit en terme de delais, de perte de paquets ou de bande passante.
+Par exemple la voix nécessite une bande passante faible, mais aussi un delais faible (afin de maintenir une qualite dans la conversation), les flux videos et de données
+nécessite une bande passante importante.
+
+Nous simulons ici un lien 100Mb/s, sur ce lien circule trois trafics, un trafic voix (20Mb/s, taille de paquet 800 bits, décrit par une loi exponentielle),
+ un trafic de vidéo (30Mb/s, taille de paquet 8000 bits), 
+et un trafic de données (30Mb/s, de plus le trafic de données comporte plusieurs tailles de paquets (40\% de taille 400, 30\% de taille 4000, 
+30\% de taille 12000, le trafic est décrit par une loi de Poisson).
+Nous allons ici mettre en place de la qualité de service afin de différencier les trois flux et analyser le comportement de ces trois flux dans divers 
+situation.
+
+La simulation est réalisé en ns-2
+
+\section{Résultats et analyse}
+
+\end{document}

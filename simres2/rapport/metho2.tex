@@ -1,0 +1,177 @@
+
+
+\documentclass[%
+        %draft,
+        %submission,
+        compressed,
+        final,
+        %
+        %technote,
+        %internal,
+        %submitted,
+        %inpress,
+        %reprint,
+        %
+        %titlepage,
+        notitlepage,
+        %anonymous,
+        narroweqnarray,
+        inline,
+        twoside,
+        %invited,
+        ]{ieee}
+
+\newcommand{\latexiie}{\LaTeX2{\Large$_\varepsilon$}}
+
+%\usepackage{ieeetsp}   % if you want the "trans. sig. pro." style
+%\usepackage{ieeetc}    % if you want the "trans. comp." style
+%\usepackage{ieeeimtc}  % if you want the IMTC conference style
+
+% Use the `endfloat' package to move figures and tables to the end
+% of the paper. Useful for `submission' mode.
+%\usepackage {endfloat}
+
+% Use the `times' package to use Helvetica and Times-Roman fonts
+% instead of the standard Computer Modern fonts. Useful for the 
+% IEEE Computer Society transactions.
+%\usepackage{times}
+% (Note: If you have the commercial package `mathtime,' (from 
+% y&y (http://www.yandy.com), it is much better, but the `times' 
+% package works too). So, if you have it...
+%\usepackage {mathtime}
+
+% for any plug-in code... insert it here. For example, the CDC style...
+%\usepackage{ieeecdc}
+ \usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\title{Rapport Simres}
+\author{Carpentier Pierre-François - Cissé Nouhoum } 
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Les flux circulant dans un réseau ne pas tous identiques, ils présentent des caractéristiques héterogènes, bien loin de l'émission continue de paquets à débit constant.
+Ces flux ont généralement une sporadicité différente de 1, et ont de plus des caractéristiques différentes au niveau de la taille des paquets.
+De plus les contraintes en délais, en perte et en bande passante, varient suivant le type de flux.
+Faire cohabiter tous ces flux sur le même réseau peut s'avérer compliqué. Nous allons présenter ici quelques techniques de régulation de trafic et analyser les résultats
+obtenus grâce à la mise en place de ces techniques dans le simulateur NS-2.
+
+\end{abstract}
+
+\section{Simulation}
+Nous allons ici simuler trois trafics:
+\begin{itemize}
+ \item Données: décrit par une loi de Poisson, taille de paquet variable (40\% 50 octets, 30\% 500 octets, 30\% 1500 octets), débit de 30Mbs;
+ \item Voix: débit déterministe, avec des paquets de 100 octets, débit de 20Mbs;
+ \item Vidéo: ON-OFF distribué exponentiellement, avec des paquets de 1000 octets, débit de 30Mbs.
+\end{itemize}
+
+\section{Résultats et analyse}
+\subsection{Etude de la sporadicité et du mécanisme de Round Robin}
+Dans cette partie nous analyserons les effets de la sporadicité sur les délais, et nous mettrons en place le mécanisme de Weighted Round Robin (WRR). Les files d'attente sont supposées de longueur 
+infinie.
+\subsubsection{Sporadicité}
+Nous allons tout d'abord étudier l'influence de la sporadicité sur les délais en l'absence de tout mécanisme de régulation de trafic.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{I_1.png}
+\caption{Délais en fonction de la sporadicité}
+\end{center}
+\end{figure}
+
+La figure 1 montre une augmentation linéaire du délais en fonction de la sporadicité, on peut également noter que le trafic le plus sporadique (la vidéo), est celui qui a les délais les plus important.
+Ce résultat est logique, en effet ce trafic arrive par vagues (vagues de plus en plus courtes et importantes quand la sporadicité augmente), les paquets sont donc stockés dans la file avant d'être traités.
+
+La sporadicité est donc très nuisible au délais sur un réseau.
+
+\subsubsection{WRR sans priorité}
+Nous avons mis en place ici un WRR, sans accorder de priorités. Le mécanisme WRR permet de traiter à tour de rôle différentes files d'attente tout en accordant des priorités à chaque files.
+En effet il permet de définir le nombre de paquets traités au niveau d'une file avant de passer à la suivante.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{I_2_(faux?).png}
+\caption{WRR sans priorité}
+\end{center}
+\end{figure}
+
+Ici nous avons accordé le même nombre de paquets traités à chaque file (50), on peut noter que les délais du flux de voix augmente significativement, alors que les délais de la vidéo et 
+des données baissent de manière importante. Ce résultat peut s'expliquer par le fait que le flux de voix est très fragmenté, il est constitué de beaucoup de petit paquets, avec le mécanisme de WWR
+on traite les priorités au niveau des paquets, les trafics constitué de petits paquets sont donc désavantagés si on ne leur accorde pas une priorité très importante.
+Il faut donc être très prudent avec les valeurs de priorité, accorder un poids plus important à un flux ne signifie pas nécessairement qu'on lui donne une priorité plus importante.
+\subsubsection{WRR avec priorité}
+Nous avons ici accordé une priorité plus importante à la voix (poids de 400, contre 50 pour la video et 100 pour les données).
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{I_3.png}
+\caption{WRR avec priorité}
+\end{center}
+\end{figure}
+
+On peut noter une augmentation importante du délais de la vidéo, et une plus grande stabilité du délais pour voix et données en fonction de la sporadicité. Avec ce mécanisme nous avons réussi 
+à réduire l'influence de l'augmentation de la sporadicité de la vidéo sur les autres trafics.
+\subsubsection{Influence des poids du WRR}
+Nous avons enfin tracé à sporadicité fixe (8), l'influence du poid de la voix dans le mécanisme WWR sur les délais.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{I_bis.png}
+\caption{influence du poids de la voix sur les délais}
+\end{center}
+\end{figure}
+
+On note que l'augmentation du poids de la voix s'accompagne bien d'une réduction des delais pour ce flux, et d'une augmentation des délais pour les autres flux, enfin on peut noter qu'il faut un 
+poids de l'ordre de 250 pour que la voix ait un délais plus faible que les autres trafics. 
+\subsubsection{Conclusion I}
+Dans cette partie, nous avons vu que l'augmentation de la sporadicité d'un débit avait un éffet désastreux sur les délais. Nous avons ensuite constaté l'influence du mécanisme WRR, et noté qu'il
+faut être très prudent sur les poids accordé à chaque flux, accorder un poid plus important à un flux ne signifie pas forcément le rendre prioritaire sur les autres flux. Néanmoins, bien paramétrer
+cela permet d'atteindre le but voulu (par exemple rendre prioritaire le flux de voix).
+
+Cette technique est envisageable dans un vrai réseau, mais elle nécessite une grande prudence au niveau de son paramétrage.
+\subsection{Etude de la taille de file d'attente et du mécanisme RIO-C}
+Dans cette partie nous avons étudié l'influence de la taille de la file d'attente ainsi que le mécanisme RIO-C.
+\subsubsection{Etude de l'influence de la taille de la file d'attente}
+Nous avons ici étudié l'influence de la taille de la file d'attente sur le taux de perte, le but était de déterminer la taille de la file d'attente permettant d'avoir un taux de pertes de 0.01\%.
+Pour avoir un ordre de grandeur de la taille de cette file, nous pouvons nous référer aux valeurs obtenues dans la première partie I, en effet, les délais constaté sont de l'ordre de 1ms pour une spordicité
+de 3, le débit moyen est de 80Mbits, et la taille de paquet minimal est 400 bits, ceci donne un ordre de grandeur grossier pour la longueur de la file d'attente autour de 200 paquets. 
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{II_1_log.png}
+\caption{Perte en fonction de la taille de la file d'attente}
+\end{center}
+\end{figure}
+
+La courbe utilise une échelle logarithmique pour les délais, on note qu'une longueur de file de 300 paquets permet d'atteindre d'objectif voulu (moins de 0.01\% de perte). On note également l'allure en
+exponentielle décroissante de la courbe: la longeur de la file inflencie énormément le taux de perte.
+
+\subsubsection{Mécanisme RIO-C}
+
+Le mécanisme RIO-C est différent d'un modèle FIFO classique. Il permet de répartir les pertes au fur et à mesure que la file se remplit (et non pas perdre tous les paquets une fois que la file est pleine.)
+Nous allons ici étudié son influence, et plus particulièrement l'influence de la précédence de perte sur le taux de perte de la vidéo et des données.
+
+\begin{figure}[htb]
+\begin{center}
+\includegraphics[width=9cm]{II_2_log.png}
+\caption{Influence du mécnisme RIO-C}
+\end{center}
+\end{figure}
+
+Nous notons une diminution du taux de perte quand la précédence de perte augmente. Néanmoins, un des intérets des mécanismes RIO-C est leur intéraction avec les mécanismes de régulation
+de trafic et de détection de perte de TCP (slow start), ici nous avons un trafic UDP qui ne prend pas en compte les pertes, ce qui limite l'intéret de ce mécanisme. 
+
+\subsection{Leaky Bucket}
+Le leaky bucket est un mécanisme qui permet de lisser le trafic au niveau d'un noeud, et donc éviter les problèmes engendré par les phénomènes de ``Burst``. Le but était ici d'observer l'inflence 
+de la vitesse d'introduction des jetons sur les taux de pertes. Néanmoins la simulation n'a pas donné de résultat satisfaisant, nous ne pouvons donc pas présenté de résultats sur cette partie.
+\section{Conclusion}
+Nous avons ici étudié l'influence de certains mécanismes sur une modélisation de trafic internet.
+Dans un premier temps nous avons travaillé sur l'amélioration des délais, pour cela nous avons d'abord étudié l'influence de la sporadicité sur ceux-ci, puis nous avons mis en place le mécanisme de
+Weighted Round Robin et analysé son influence.
+Puis dans une Deuxième partie nous avons étudié l'influence de la taille de la file d'attente sur le taux de perte, et nous avons mis en place le mécanisme RIO-C permettant de rendre plus progressive les
+pertes.
+Les mécanismes que nous avons vu permettent bien d'améliorer le trafic, et de différencier ceux-ci, mais ils sont à paramétrer avec une grande prudence, sous peine d'avoir l'effet inverse de celui  
+recherché.
+
+\end{document}
